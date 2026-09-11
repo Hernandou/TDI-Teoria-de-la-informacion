@@ -1,7 +1,7 @@
-import socket
 import random
 import struct
 import threading
+import socket
 
 class ServerTCP:
 
@@ -20,9 +20,10 @@ class ServerTCP:
     noise_range : int
 
     def __init__(self, port, host):
-        self.setServerSettings(port,host)
-        self.setServerSettings()
+        self.setServerSettings(port, host)
         self.setNoiseRange()
+        self.channelGeneration()
+
 
     def setNoiseRange(self):
         self.noise_range = random.Random(self.CHANNEL_SEED + 1)
@@ -33,14 +34,14 @@ class ServerTCP:
         self.CHANNEL_SEED = 2026
     
     def channelGeneration(self):
-        rng_channel = random.Random(self.CHANNEL_SEED)
-        self.limit_a = rng_channel.random()
-        self.limit_b = rng_channel.random()
-        self.p_error = min(self.limite_a, self.limite_b) * self.rng_channel.random()
+        self.rng_channel = random.Random(self.CHANNEL_SEED)
+        self.limit_a =  self.rng_channel.random()
+        self.limit_b =  self.rng_channel.random()
+        self.p_error = min(self.limit_a, self.limit_b) * self.rng_channel.random()
 
     def receiveExactly(self, socket, quantity):
         data = bytearray()
-        while(data < len(quantity)):
+        while(len(data) < quantity):
             block = socket.recv(quantity - len(data))
             
             if(not block):
@@ -64,19 +65,63 @@ class ServerTCP:
     def serveTheCostumer(self, customer, address):
         print(f"[+] Cliente conectado: {address[0]}:{address[1]}")
 
-        while True:
-            message = self.receiveExactly(customer)
+        try:
+            while True:
+                message = self.receiveMessage(customer)
 
-            if(message == 'SALIR'):
-                break
-            
-            if(not message):
-                self.sendMessage(customer, "ERROR: Mensaje vacío")
-                continue
+                if(message == 'SALIR'):
+                    break
+                
+                if(not message):
+                    self.sendMessage(customer, "ERROR: Mensaje vacío")
+                    continue
 
-            if (any(bit not in '01' for bit in message)):
-                self.sendMessage(customer, "ERROR: Solo se permiten simbolos 0 y 1")
-                continue
+                if (any(bit not in '01' for bit in message)):
+                    self.sendMessage(customer, "ERROR: Solo se permiten simbolos 0 y 1")
+                    continue
+
+                output = []
+                for bit in message:
+                    if(self.noise_range.random() < self.p_error):
+                        output.append("1" if bit == '0' else '0')
+                    else:
+                        output.append(bit)
+
+                self.sendMessage(customer, ''.join(output))
+        except (ConnectionError, OSError):
+            pass
+        finally:
+            customer.close()
+            print(f"[-] Cliente desconectado: {address[0]}:{address[1]}")
+
+    def startServer(self):
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server.bind((self.HOST, self.PORT))
+
+        server.listen()
+
+        print(f''' 
+        
+        -------- SERVIDOR - CANAL BINARIO SIMETRICO (BSC) --------
+        
+        - Escuchando en puerto {self.PORT}
+        - La probabilidad de error (p) permanece oculta
+
+        ----------------------------------------------------------        
+        ''')
+
+        try:
+            while True:
+                customer, address = server.accept()
+                thread = threading.Thread( target= self.serveTheCostumer, args=(customer, address), daemon=True)
+                thread.start()
+
+        except KeyboardInterrupt:
+            print(' -------------- SERVIDOR FINALIZADO --------------')
+
+
+
 
             
 
