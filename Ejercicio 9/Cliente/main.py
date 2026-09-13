@@ -20,9 +20,11 @@ if __name__ == '__main__':
             opc = int(input('>>> Ingrese una opcion: '))
 
             if(opc == 1):
-                message = input('>>> Escriba la secuencia de bits a enviar: ')
-                clientTcp.sendMessage(message)
-                print("Mensaje desde el servidor: "+ clientTcp.receiveMessage(clientTcp.getSocket()))
+                fontMessage = input('>>> Escriba la secuencia de bits a enviar: ')
+                clientTcp.sendMessage(fontMessage)
+                outputMessage = clientTcp.receiveMessage(clientTcp.getSocket())
+                clientTcp.calculateOutputProbability(fontMessage, outputMessage)
+
 
             elif (opc == 2):
                 size = 0
@@ -42,10 +44,12 @@ if __name__ == '__main__':
                 else:
                     size = 10000
 
-                bitSequence = clientTcp.generateRandomBitSequences(size)
-                print(bitSequence)
-                clientTcp.sendMessage(bitSequence)
-                print(clientTcp.receiveMessage(clientTcp.getSocket()))
+                fontMessage = clientTcp.generateRandomBitSequences(size)
+                clientTcp.sendMessage(fontMessage)
+                outputMessage = clientTcp.receiveMessage(clientTcp.getSocket())
+
+                clientTcp.calculateOutputProbability(fontMessage, outputMessage)
+
     except Exception:
         print('ERROR: No se pudo establecer la conexion con el servidor.')
         

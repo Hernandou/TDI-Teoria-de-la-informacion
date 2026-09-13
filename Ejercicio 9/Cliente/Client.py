@@ -1,6 +1,7 @@
 import struct
 import random
 import socket
+from Statics import Statics
 
 class ClientTCP:
 
@@ -63,7 +64,9 @@ class ClientTCP:
         return self.server
 
     def calculateOutputProbability(self, original, response):
-        
+        output = Statics.compareChanges(original, response)
+        print(output)
+
 
 
 
