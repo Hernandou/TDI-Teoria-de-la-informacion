@@ -63,9 +63,31 @@ class ClientTCP:
     def getSocket(self):
         return self.server
 
-    def calculateOutputProbability(self, original, response):
-        output = Statics.compareChanges(original, response)
-        print(output)
+    def calculateOutputProbability(self, fontMessage, outputMessage):
+        output = Statics.compareChanges(fontMessage, outputMessage)
+        matrix = Statics.buildChannelTransitionMatrix(output)
+
+        print(f'Frecuencia de la fuente: P(0) = {Statics.relativeFrequency(output["sendedZeros"],len(fontMessage))}')
+        print(f'Frecuencia de la fuente: P(1) = {Statics.relativeFrequency(output["sendedOnes"],len(fontMessage))}')
+
+        print('Matriz de transicion de canal')
+        for row in matrix:
+            print(row)
+
+        i = 1
+        for row in matrix:
+            print(f'Suma en fila {i}: {row[0] + row[1]}')
+            i+=1
+
+        self.showMutualInformation(fontMessage, matrix, output)
+
+    def showMutualInformation(self, fontMessage, matrix, changes):
+        pz = Statics.relativeFrequency(changes['sendedZeros'], len(fontMessage))
+        po = Statics.relativeFrequency(changes['sendedOnes'], len(fontMessage))
+
+        mutualInformation = Statics.mutualInformation(matrix, pz, po)
+
+        print(f'Informacion Mutua I(A,B) = H(B) - H(B|A) = {mutualInformation}')
 
 
 
