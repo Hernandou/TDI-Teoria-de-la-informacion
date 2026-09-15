@@ -1,6 +1,34 @@
 from Client import ClientTCP
 
 
+def showAllInformation(fontMessage, clienTcp, showWord = False):
+    clientTcp.sendMessage(fontMessage)
+    outputMessage = clientTcp.receiveMessage(clientTcp.getSocket())
+    if(showWord):
+        print(f'Palabra recibida: {binaryToString(outputMessage)}')
+    clientTcp.calculateOutputProbability(fontMessage, outputMessage)
+    
+    return outputMessage
+    
+def stringToBinary(fontMessage):
+    bitSecuence = ''
+    print(f'Palabra enviada: {fontMessage}')
+    for caracter in fontMessage:
+        bitSecuence += format(ord(caracter), '08b')
+    
+    return bitSecuence
+
+def binaryToString(outputMessage):
+    outputWord = ''
+
+    for i in range(0, len(outputMessage), 8):
+        byte = outputMessage[i: i+8]
+        number = int(byte,2)
+        outputWord += chr(number)
+
+    return outputWord
+
+
 if __name__ == '__main__':
 
     clientTcp = ClientTCP(5555, 'localhost')
@@ -11,7 +39,7 @@ if __name__ == '__main__':
         print('''
 
             -------------- Menu --------------
-            1- Enviar una cadena de bits manual
+            1- Enviar una cadena de texto manual
             2- Enviar una cadena de bits predefinida
 
             3- Salir 
@@ -20,10 +48,9 @@ if __name__ == '__main__':
         opc = int(input('>>> Ingrese una opcion: '))
 
         if(opc == 1):
-            fontMessage = input('>>> Escriba la secuencia de bits a enviar: ')
-            clientTcp.sendMessage(fontMessage)
-            outputMessage = clientTcp.receiveMessage(clientTcp.getSocket())
-            clientTcp.calculateOutputProbability(fontMessage, outputMessage)
+            baseString = input('>>> Escriba la secuencia de digitos a enviar: ')
+            binaryFontMessage = stringToBinary(baseString)
+            showAllInformation(binaryFontMessage, clientTcp, True)
 
 
         elif (opc == 2):
@@ -45,10 +72,9 @@ if __name__ == '__main__':
                 size = 10000
 
             fontMessage = clientTcp.generateRandomBitSequences(size)
-            clientTcp.sendMessage(fontMessage)
-            outputMessage = clientTcp.receiveMessage(clientTcp.getSocket())
+            showAllInformation(fontMessage, clientTcp)
+            
 
-            print(clientTcp.calculateOutputProbability(fontMessage, outputMessage))
 
     
         

@@ -33,8 +33,6 @@ class Statics:
         return changes
 
     def buildChannelTransitionMatrix(changes):
-        print(changes)
-
         channelTransitionMatrix = []
 
         row = [] 
@@ -58,27 +56,25 @@ class Statics:
 
     #Seguimos la formula I(A,B) = H(B) - H(B|A)        
     def mutualInformation(mct, pz, po):
-        zerosProbabillity = Statics.symbolProbabillity(pz, mct[0])
-        onesProbabillity = Statics.symbolProbabillity(po, mct[1])
-
-        hb = Statics.outputEntropy(zerosProbabillity, onesProbabillity)
+        [p0, p1] = Statics.symbolProbabillity(pz, po, mct)
+    
+        hb = Statics.outputEntropy(p0, p1)
         hba = Statics.conditionalEntropy(mct[0])
 
         return hb - hba
         
 
     #Calculamos H(B/A)
-    def conditionalEntropy(row):
-        value = 0
-
-        for probabillity in row:
-            value += probabillity * math.log2(1/probabillity)
-
-        return value
+    def conditionalEntropy(mct):
+        return mct[0] * math.log2(1/mct[0]) + mct[1] * math.log2(1/mct[1])
 
 
-    def symbolProbabillity(symbolP, conditionalProbabillities):
-        return symbolP * conditionalProbabillities[0] * conditionalProbabillities[1]
+    def symbolProbabillity(pSymbol0, pSymbol1, conditionalProbabillities):
+        flattenedList = sum(conditionalProbabillities, [])
+        pVal0 = pSymbol0 * flattenedList[0] + pSymbol1 * flattenedList[2]
+        pVal1 = pSymbol0 * flattenedList[1] + pSymbol1 * flattenedList[3]
+
+        return [pVal0, pVal1]
 
     def outputEntropy(pz, po):
         return pz * math.log2(1/pz) + po * math.log2(1/po)

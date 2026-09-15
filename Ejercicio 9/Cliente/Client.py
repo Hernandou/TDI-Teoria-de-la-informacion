@@ -66,9 +66,10 @@ class ClientTCP:
     def calculateOutputProbability(self, fontMessage, outputMessage):
         output = Statics.compareChanges(fontMessage, outputMessage)
         matrix = Statics.buildChannelTransitionMatrix(output)
-
+        print('=' * 55)
+        print(f'BER : errores totales / total bits de la fuente = {output["zerosToOnes"] + output["onesToZeros"]}/{len(fontMessage)} = {(output["zerosToOnes"] + output["onesToZeros"])/ len(fontMessage)}')
         print(f'Frecuencia de la fuente: P(0) = {Statics.relativeFrequency(output["sendedZeros"],len(fontMessage))}')
-        print(f'Frecuencia de la fuente: P(1) = {Statics.relativeFrequency(output["sendedOnes"],len(fontMessage))}')
+        print(f'Frecuencia de la fuente: P(1) = {Statics.relativeFrequency(output["sendedOnes"],len(fontMessage))}\n')
 
         print('Matriz de transicion de canal')
         for row in matrix:
@@ -78,8 +79,10 @@ class ClientTCP:
         for row in matrix:
             print(f'Suma en fila {i}: {row[0] + row[1]}')
             i+=1
-
+        print('\n ')
         self.showMutualInformation(fontMessage, matrix, output)
+        print(f'Capacidad de canal 1 - H(p) = {self.showChannelCapacity(matrix)}')
+        print('=' * 55)
 
     def showMutualInformation(self, fontMessage, matrix, changes):
         pz = Statics.relativeFrequency(changes['sendedZeros'], len(fontMessage))
@@ -87,7 +90,11 @@ class ClientTCP:
 
         mutualInformation = Statics.mutualInformation(matrix, pz, po)
 
-        print(f'Informacion Mutua I(A,B) = H(B) - H(B|A) = {mutualInformation}')
+        print(f'\nInformacion Mutua I(A,B) = H(B) - H(B|A) = {mutualInformation}')
+
+    def showChannelCapacity(self, mct):
+        return 1 - Statics.conditionalEntropy(mct[0])
+
 
 
 
