@@ -7,6 +7,8 @@
 - **Nehin**, José
 - **Quiroga**, Juan Marcos
 
+### Link de PRACTICA 1 RESUELTA 
+-- https://drive.google.com/drive/u/0/folders/16uhgXYqhR1cvwshp1M58cGiSYr8bmRvX
 
 ---
 
